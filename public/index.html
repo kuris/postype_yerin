@@ -473,7 +473,7 @@ async function loadPosts() {
   grid.innerHTML = '<div class="state-msg"><div class="loader"></div><br>포스트 불러오는 중...</div>';
 
   try {
-    const res = await fetch(`/posts?size=50&sort=${currentSort === 'POPULAR' ? 'popular' : 'recent'}&page=${currentPage}`);
+    const res = await fetch(`/posts?size=100&sort=${currentSort === 'POPULAR' ? 'popular' : 'recent'}&page=${currentPage}`);
     const data = await res.json();
 
     console.log('[postype raw]', data.raw);
