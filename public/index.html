@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서예린의 은밀한 실험실</title>
+<link rel="alternate" type="application/rss+xml" title="서예린의 은밀한 실험실 RSS" href="/rss.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0b0e;
+  --bg2: #13101a;
+  --bg3: #1c1825;
+  --line: rgba(255,255,255,0.08);
+  --line2: rgba(255,255,255,0.15);
+  --acc: #c8a0e8;
+  --acc2: #8b5cf6;
+  --acc3: #f472b6;
+  --text: #e8e0f0;
+  --muted: #8a7fa0;
+  --serif: 'Nanum Myeongjo', serif;
+  --sans: 'Noto Sans KR', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* 배경 그레인 */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4; pointer-events: none; z-index: 0;
+}
+
+/* 헤더 */
+header {
+  position: relative;
+  border-bottom: 1px solid var(--line2);
+  padding: 0 clamp(20px, 5vw, 80px);
+  z-index: 10;
+}
+.header-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0;
+}
+.logo {
+  font-family: var(--serif);
+  font-size: clamp(15px, 2vw, 19px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+}
+.logo span { color: var(--acc); }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.rss-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px;
+  border: 1px solid var(--acc2);
+  border-radius: 2px;
+  color: var(--acc);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  background: transparent;
+  cursor: pointer;
+}
+.rss-btn:hover { background: var(--acc2); color: #fff; }
+.rss-btn svg { width: 13px; height: 13px; }
+
+/* 히어로 */
+.hero {
+  position: relative;
+  max-width: 1100px; margin: 0 auto;
+  padding: clamp(40px, 8vw, 100px) clamp(20px, 5vw, 80px) clamp(30px, 5vw, 60px);
+  z-index: 1;
+}
+.hero-label {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--acc); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-label::before {
+  content: ''; display: block;
+  width: 30px; height: 1px; background: var(--acc);
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+.hero h1 em {
+  font-style: normal;
+  -webkit-text-stroke: 1px var(--acc);
+  color: transparent;
+}
+.hero-meta {
+  display: flex; gap: 24px; flex-wrap: wrap;
+  font-size: 13px; color: var(--muted);
+  margin-top: 20px;
+}
+.hero-meta span { display: flex; align-items: center; gap: 6px; }
+.hero-meta strong { color: var(--text); font-weight: 500; }
+
+/* 장르 태그 */
+.genre-bar {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 80px) 32px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.genre-tag {
+  padding: 5px 14px;
+  border: 1px solid var(--line2);
+  border-radius: 1px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+}
+.genre-tag:hover, .genre-tag.active {
+  border-color: var(--acc);
+  color: var(--acc);
+  background: rgba(139,92,246,0.1);
+}
+
+/* 컨트롤 */
+.controls {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 80px) 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.ctrl-left { display: flex; gap: 4px; }
+.sort-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 1px;
+  letter-spacing: 0.03em;
+}
+.sort-btn.active, .sort-btn:hover { border-color: var(--line2); color: var(--text); background: var(--bg3); }
+.post-count { font-size: 12px; color: var(--muted); }
+
+/* 포스트 그리드 */
+.grid-wrap {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 80px);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px;
+  border: 1px solid var(--line);
+}
+.post-card {
+  background: var(--bg);
+  padding: 28px 24px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transition: background 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.post-card::after {
+  content: '';
+  position: absolute; left: 0; top: 0;
+  width: 2px; height: 0;
+  background: var(--acc2);
+  transition: height 0.3s ease;
+}
+.post-card:hover { background: var(--bg3); }
+.post-card:hover::after { height: 100%; }
+
+.card-series {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--acc); margin-bottom: 10px;
+}
+.card-title {
+  font-family: var(--serif);
+  font-size: 17px; font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  color: var(--text);
+  word-break: keep-all;
+}
+.card-excerpt {
+  font-size: 13px; color: var(--muted);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.card-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: var(--muted);
+}
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.card-tag {
+  padding: 2px 8px;
+  border: 1px solid var(--line2);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border-radius: 1px;
+}
+.card-price {
+  font-size: 12px;
+  color: var(--acc3);
+  font-weight: 500;
+}
+.card-thumb {
+  width: 100%; aspect-ratio: 16/9;
+  object-fit: cover;
+  margin-bottom: 16px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.post-card:hover .card-thumb { opacity: 1; }
+
+/* 로딩/에러 */
+.state-msg {
+  grid-column: 1 / -1;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.loader {
+  display: inline-block;
+  width: 24px; height: 24px;
+  border: 2px solid var(--line2);
+  border-top-color: var(--acc);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 페이지네이션 */
+.pagination {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 32px clamp(20px, 5vw, 80px);
+  display: flex; justify-content: center; gap: 8px;
+}
+.page-btn {
+  padding: 8px 18px;
+  border: 1px solid var(--line2);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 1px;
+}
+.page-btn:hover, .page-btn.active {
+  border-color: var(--acc);
+  color: var(--acc);
+  background: rgba(139,92,246,0.08);
+}
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* 푸터 */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--line);
+  padding: 28px clamp(20px, 5vw, 80px);
+  text-align: center;
+}
+footer .inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 20px;
+  font-size: 12px; color: var(--muted);
+}
+footer a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+footer a:hover { color: var(--acc); }
+
+/* 토스트 */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--bg3); border: 1px solid var(--acc2);
+  color: var(--acc); padding: 12px 20px;
+  font-size: 13px; border-radius: 2px;
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.3s; pointer-events: none; z-index: 100;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+  .hero-meta { gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">서예린의 <span>은밀한 실험실</span></a>
+    <div class="header-right">
+      <button class="rss-btn" onclick="copyRss()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 11a9 9 0 019 9M4 4a16 16 0 0116 16"/>
+          <circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        RSS 구독
+      </button>
+      <a href="https://www.postype.com/@yasulfactory" target="_blank" class="rss-btn" style="border-color:var(--line2);color:var(--muted)">
+        포스타입 ↗
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-label">실험실 채널</div>
+  <h1>고수위<br><em>야설</em> 실험실</h1>
+  <div class="hero-meta">
+    <span>구독자 <strong id="subCount">—</strong></span>
+    <span>포스트 <strong id="postCount">—</strong></span>
+    <span>채널 <strong>@yasulfactory</strong></span>
+  </div>
+</section>
+
+<div class="genre-bar" id="genreBar">
+  <button class="genre-tag active" data-genre="">전체</button>
+  <button class="genre-tag" data-genre="TS">TS·젠더스왑</button>
+  <button class="genre-tag" data-genre="NTR">NTR</button>
+  <button class="genre-tag" data-genre="조교">조교·지배</button>
+  <button class="genre-tag" data-genre="판타지">판타지</button>
+  <button class="genre-tag" data-genre="학원">학원</button>
+  <button class="genre-tag" data-genre="금융">금융·피폐</button>
+</div>
+
+<div class="controls">
+  <div class="ctrl-left">
+    <button class="sort-btn active" data-sort="RECENT" onclick="setSort(this)">최신순</button>
+    <button class="sort-btn" data-sort="POPULAR" onclick="setSort(this)">인기순</button>
+  </div>
+  <div class="post-count" id="countLabel">로딩 중...</div>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid">
+    <div class="state-msg"><div class="loader"></div><br>포스트 불러오는 중...</div>
+  </div>
+</div>
+
+<div class="pagination" id="pagination"></div>
+
+<footer>
+  <div class="inner">
+    <span>© 큐리스 / 서예린의 은밀한 실험실</span>
+    <a href="/rss.xml">RSS 피드</a>
+    <a href="https://www.postype.com/@yasulfactory" target="_blank">포스타입 채널</a>
+    <a href="https://www.postype.com/@yasulfactory/membership" target="_blank">멤버십</a>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+const POSTYPE_BASE = 'https://www.postype.com/@yasulfactory';
+let currentSort = 'RECENT';
+let currentPage = 0;
+let currentGenre = '';
+let allPosts = [];
+
+// 포스타입 API 직접 호출 (CORS 우회: Vercel API 경유)
+async function loadPosts() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '<div class="state-msg"><div class="loader"></div><br>포스트 불러오는 중...</div>';
+
+  try {
+    const res = await fetch(`/posts?size=50&sort=${currentSort === 'POPULAR' ? 'popular' : 'recent'}&page=${currentPage}`);
+    const data = await res.json();
+
+    // raw 응답 구조 디버그 (콘솔)
+    console.log('[postype raw]', data.raw);
+
+    allPosts = data.posts || [];
+    renderPosts(allPosts);
+    updateStats(data.raw);
+  } catch(e) {
+    grid.innerHTML = `<div class="state-msg">⚠️ 포스트를 불러오지 못했습니다<br><small style="color:var(--muted);margin-top:8px;display:block">${e.message}</small></div>`;
+  }
+}
+
+function renderPosts(posts) {
+  const grid = document.getElementById('grid');
+  const countLabel = document.getElementById('countLabel');
+
+  // 장르 필터
+  const filtered = currentGenre
+    ? posts.filter(p => {
+        const text = JSON.stringify(p).toLowerCase();
+        return text.includes(currentGenre.toLowerCase());
+      })
+    : posts;
+
+  countLabel.textContent = `총 ${filtered.length}개`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="state-msg">해당 장르의 포스트가 없습니다</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => buildCard(p)).join('');
+}
+
+function buildCard(p) {
+  const url = `${POSTYPE_BASE}/post/${p.id}`;
+  const title = p.title || '(제목 없음)';
+  const excerpt = p.summary || p.excerpt || p.description || '';
+  const series = p.series?.title || p.seriesTitle || '';
+  const date = p.publishedAt
+    ? new Date(p.publishedAt).toLocaleDateString('ko-KR', { year:'numeric', month:'short', day:'numeric' })
+    : '';
+  const price = p.price > 0 ? `${p.price.toLocaleString()}P` : '무료';
+  const tags = (p.tags || []).slice(0, 3).map(t => `<span class="card-tag">${t}</span>`).join('');
+  const thumb = p.thumbnail || p.coverImage || p.thumbnailUrl || '';
+  const thumbHtml = thumb ? `<img class="card-thumb" src="${thumb}" alt="" loading="lazy" onerror="this.style.display='none'">` : '';
+
+  return `<a class="post-card" href="${url}" target="_blank" rel="noopener">
+    ${thumbHtml}
+    ${series ? `<div class="card-series">${series}</div>` : ''}
+    <div class="card-title">${title}</div>
+    ${excerpt ? `<div class="card-excerpt">${excerpt}</div>` : ''}
+    <div class="card-meta">
+      <div class="card-tags">${tags}</div>
+      <div>
+        <span class="card-price">${price}</span>
+        ${date ? `<span style="margin-left:8px;font-size:11px;color:var(--muted)">${date}</span>` : ''}
+      </div>
+    </div>
+  </a>`;
+}
+
+function updateStats(raw) {
+  // raw 응답에서 채널 통계 추출 시도
+  const sub = raw?.subscriberCount || raw?.channel?.subscriberCount;
+  const total = raw?.totalCount || raw?.total;
+  if (sub) document.getElementById('subCount').textContent = sub.toLocaleString() + '명';
+  if (total) document.getElementById('postCount').textContent = total.toLocaleString() + '개';
+}
+
+function setSort(btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentSort = btn.dataset.sort;
+  currentPage = 0;
+  loadPosts();
+}
+
+// 장르 필터
+document.getElementById('genreBar').addEventListener('click', e => {
+  const btn = e.target.closest('.genre-tag');
+  if (!btn) return;
+  document.querySelectorAll('.genre-tag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentGenre = btn.dataset.genre;
+  renderPosts(allPosts);
+});
+
+function copyRss() {
+  const url = location.origin + '/rss.xml';
+  navigator.clipboard.writeText(url).then(() => showToast('RSS 주소 복사됨: ' + url));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+loadPosts();
+</script>
+</body>
+</html>

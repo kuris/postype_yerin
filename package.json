@@ -1,0 +1,7 @@
+{
+  "name": "yasulfactory-rss",
+  "version": "1.0.0",
+  "description": "서예린의 은밀한 실험실 - RSS & 채널 대시보드",
+  "engines": { "node": ">=18" },
+  "dependencies": {}
+}
