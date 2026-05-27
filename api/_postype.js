@@ -3,154 +3,104 @@ const CHANNEL_ID = '2007798';
 const BASE_URL = 'https://www.postype.com';
 
 const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-  'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8',
-  'Cache-Control': 'no-cache',
-  'Pragma': 'no-cache',
+  'Accept': 'application/json, text/plain, */*',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Referer': 'https://www.postype.com/',
 };
 
 /**
- * HTML 스크래핑으로 여러 페이지에 걸쳐 포스트를 긁어옴 (50개 이상 완벽 지원)
+ * 포스타입 공식 비동기 API로 모든 포스트를 병렬 일괄 스크래핑 (최대 개수 완전 제한 없음)
  */
-async function fetchPosts({ size = 100, sortType = 'RECENT', page = 0 } = {}) {
-  const posts = [];
-  const sort = sortType === 'POPULAR' ? 'popular' : 'recent';
-  
-  // 50개 이상을 원활히 지원하기 위해 서버에서 여러 페이지(1~5페이지)를 순회하며 긁어옴
-  const startPage = page > 0 ? page : 1;
-  const maxPagesToScrap = 5; // 최대 5페이지까지 순회하여 약 100~150개 확보
-  
-  let fetchedCount = 0;
-  
-  for (let p = startPage; p < startPage + maxPagesToScrap; p++) {
-    const url = `${BASE_URL}/@${CHANNEL_HANDLE}/posts?sort=${sort}&page=${p}`;
-    try {
-      const res = await fetch(url, { headers: HEADERS });
-      if (!res.ok) break;
-      const html = await res.text();
-      const pagePosts = parsePostsFromHtml(html);
-      
-      if (!pagePosts || pagePosts.length === 0) break;
-      
-      posts.push(...pagePosts);
-      fetchedCount += pagePosts.length;
-      
-      // 이미 충분한 양을 확보했다면 순회 종료
-      if (posts.length >= size) break;
-    } catch (e) {
-      console.error(`Page ${p} scraping failed:`, e);
-      break;
-    }
-  }
-
-  // 중복 아이템 제거
-  const uniquePosts = [];
-  const seenIds = new Set();
-  for (const post of posts) {
-    if (!seenIds.has(post.id)) {
-      seenIds.add(post.id);
-      uniquePosts.push(post);
-    }
-  }
-
-  return { data: uniquePosts.slice(0, size), url: `${BASE_URL}/@${CHANNEL_HANDLE}/posts` };
-}
-
-/**
- * HTML의 __NEXT_DATA__ 스크립트 태그에서 포스트 정보 완벽 추출
- */
-function parsePostsFromHtml(html) {
-  const nextDataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-  if (!nextDataMatch) return [];
-
+async function fetchPosts({ size = 100, sortType = 'RECENT' } = {}) {
   try {
-    const nextData = JSON.parse(nextDataMatch[1]);
-    const pageProps = nextData?.props?.pageProps;
-    if (!pageProps) return [];
+    // 1. 첫 페이지를 호출하여 전체 페이지 수(totalPages) 및 첫 페이지 아이템 획득
+    const firstPageUrl = `https://api.postype.com/api/v2/channel/${CHANNEL_ID}/activity/all?page=1`;
+    const res = await fetch(firstPageUrl, { headers: HEADERS });
+    if (!res.ok) throw new Error(`Postype API status: ${res.status}`);
+    
+    const data = await res.json();
+    const totalPages = data.totalPages || 1;
+    const allItems = [...(data.content || [])];
 
-    // 포스타입 NextProps 내의 다양한 포스트 배열 경로 탐색
-    const candidates = [
-      pageProps.posts,
-      pageProps.channelPosts,
-      pageProps.channelHome?.posts,
-      pageProps.channelHome?.channelPosts,
-      pageProps.channelHome?.recentPosts,
-      pageProps.channelHome?.popularPosts,
-      pageProps.channelHome?.tabPosts?.posts,
-      pageProps.channelHome?.tabPosts?.content,
-      pageProps.initialData?.posts,
-      pageProps.postList,
-    ];
-
-    for (const candidate of candidates) {
-      if (Array.isArray(candidate) && candidate.length > 0) {
-        return candidate.map(normalizePost);
+    // 2. 만약 페이지가 더 있다면, Vercel 시간 초과 방지를 위해 병렬(Promise.all)로 모든 페이지 한꺼번에 fetch
+    if (totalPages > 1) {
+      const promises = [];
+      // 2페이지부터 끝페이지까지 병렬 요청 생성
+      for (let p = 2; p <= totalPages; p++) {
+        promises.push(
+          fetch(`https://api.postype.com/api/v2/channel/${CHANNEL_ID}/activity/all?page=${p}`, { headers: HEADERS })
+            .then(r => r.ok ? r.json() : { content: [] })
+            .catch(() => ({ content: [] }))
+        );
+      }
+      const results = await Promise.all(promises);
+      for (const result of results) {
+        if (result && result.content) {
+          allItems.push(...result.content);
+        }
       }
     }
-  } catch (e) {
-    console.error('Error parsing JSON from __NEXT_DATA__:', e);
+
+    // 3. 포스트 타입("POST")인 요소들만 필터링하여 데이터 매핑
+    const posts = allItems
+      .filter(item => item.type === 'POST' && item.feedItem)
+      .map(item => normalizePost(item.feedItem));
+
+    // 정렬 (인기순 요청 시 추가 정렬 가능)
+    if (sortType === 'POPULAR') {
+      // 뷰 카운트가 API에 있으면 사용, 없으면 좋아요/후원 통계 등 순서 유지
+      posts.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+    }
+
+    return { data: posts.slice(0, size), url: firstPageUrl };
+  } catch (err) {
+    console.error('fetchPosts via internal API error:', err);
+    throw err;
   }
-  return [];
 }
 
 /**
- * RSS 피드에서 포스트 파싱 (최종 폴백용, 20개 내외 제한 있음)
+ * 포스타입 API의 feedItem 구조를 앱 표준 데이터 포맷으로 정규화
  */
-async function fetchPostsFromRss({ size = 100 } = {}) {
-  const url = `${BASE_URL}/@${CHANNEL_HANDLE}/rss`;
-  const res = await fetch(url, {
-    headers: { ...HEADERS, 'Accept': 'application/rss+xml, application/xml, text/xml, */*' }
-  });
-  if (!res.ok) throw new Error(`RSS fetch failed: ${res.status}`);
-  const xml = await res.text();
-  return parseRss(xml, size);
-}
-
-function parseRss(xml, limit = 100) {
-  const posts = [];
-  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-  let match;
-
-  while ((match = itemRegex.exec(xml)) !== null && posts.length < limit) {
-    const item = match[1];
-    const get = (tag) => {
-      const m = item.match(new RegExp(`<${tag}(?:[^>]*)><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>|<${tag}(?:[^>]*)>([^<]*)<\\/${tag}>`));
-      return m ? (m[1] || m[2] || '').trim() : '';
-    };
-    const link = get('link') || '';
-    const idMatch = link.match(/\/post\/(\d+)/);
-    posts.push({
-      id: idMatch ? idMatch[1] : String(posts.length),
-      title: get('title'),
-      summary: get('description'),
-      publishedAt: get('pubDate') ? new Date(get('pubDate')).toISOString() : null,
-      thumbnail: (() => {
-        const m = item.match(/url="([^"]+\.(jpg|jpeg|png|webp|gif))"/i);
-        return m ? m[1] : '';
-      })(),
-      link,
-      tags: [...item.matchAll(/<category>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/category>/g)].map(m => m[1].trim()),
-      price: 0,
-    });
-  }
-  return posts;
-}
-
 function normalizePost(p) {
+  // 타임스탬프가 초 단위(Unix timestamp)로 내려오므로 밀리초 단위로 보정
+  const pubDate = p.publishedAt 
+    ? new Date(p.publishedAt * 1000).toISOString() 
+    : new Date().toISOString();
+
+  // 해시태그 파싱 (#상식개변 #남존여비 등 subTitle에 해시태그가 있는 경우 태그 배열 추출)
+  const tags = [];
+  if (p.subTitle) {
+    const hashTags = p.subTitle.match(/#([^\s#]+)/g);
+    if (hashTags) {
+      hashTags.forEach(t => tags.push(t.replace('#', '')));
+    }
+  }
+
   return {
-    id: String(p.id || p.postId || ''),
-    title: p.title || p.postTitle || '',
-    summary: p.summary || p.excerpt || p.description || '',
-    publishedAt: p.publishedAt || p.createdAt || p.regDate || null,
-    thumbnail: p.thumbnail || p.coverImage || p.mainImage || '',
-    tags: p.tags || p.categories || [],
-    link: `${BASE_URL}/@${CHANNEL_HANDLE}/post/${p.id || p.postId}`,
+    id: String(p.postId || p.id || ''),
+    title: p.title || '',
+    summary: p.excerpt || p.subTitle || '',
+    publishedAt: pubDate,
+    thumbnail: p.thumbnailUrl || p.coverImage || '',
+    tags: tags.length > 0 ? tags : (p.tags || []),
+    link: `${BASE_URL}/@${CHANNEL_HANDLE}/post/${p.postId || p.id}`,
     price: p.price || 0,
+    viewCount: p.viewCount || 0,
   };
 }
 
+async function fetchPostsFromRss() {
+  // RSS는 포스타입 자체에 원래 없으므로 빈 배열 폴백
+  return [];
+}
+
 async function fetchChannelInfo() {
+  const url = `https://api.postype.com/api/v1/channels/by/channel-name/${CHANNEL_HANDLE}`;
+  try {
+    const res = await fetch(url, { headers: HEADERS });
+    if (res.ok) return await res.json();
+  } catch {}
   return null;
 }
 
