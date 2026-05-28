@@ -178,8 +178,9 @@ function normalizePost(p) {
     }
   }
 
-  // 썸네일 URL을 다각적으로 파싱하여 에셋 누락 방지
-  const thumb = p.thumbnailUrl || p.coverImage || (p.thumbnails && p.thumbnails[0] ? p.thumbnails[0].url : '');
+  // 썸네일 URL을 다각적으로 파싱하여 에셋 누락 방지 (RSC의 url 및 API의 imagePath 지원)
+  const thumbObj = p.thumbnails && p.thumbnails[0] ? p.thumbnails[0] : null;
+  const thumb = p.thumbnailUrl || p.coverImage || (thumbObj ? (thumbObj.url || thumbObj.imagePath) : '');
 
   return {
     id: String(p.postId || p.id || ''),
