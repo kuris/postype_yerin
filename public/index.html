@@ -50,7 +50,7 @@ header {
   padding: 0 clamp(20px, 5vw, 80px);
   z-index: 10;
   backdrop-filter: blur(12px);
-  background: rgba(7, 5, 13, 0.7);
+  background: var(--bg3);
 }
 .header-inner {
   max-width: 1100px; margin: 0 auto;
@@ -650,19 +650,25 @@ footer a:hover { color: var(--acc); }
 
 /* 라이트 테마 변환 변수 주입 */
 :root.light-theme {
-  --bg: #faf8fc;
-  --bg2: #f3edf8;
-  --bg3: rgba(243, 237, 248, 0.65);
-  --line: rgba(139, 92, 246, 0.08);
-  --text: #2c2536;
-  --muted: #726880;
+  --bg: #fcfafc;
+  --bg2: #f7f3fb;
+  --bg3: rgba(247, 243, 251, 0.75);
+  --line: rgba(139, 92, 246, 0.12);
+  --line2: rgba(139, 92, 246, 0.25);
+  --text: #241a30;
+  --muted: #7f738f;
   --primary: #8b5cf6;
   --primary-rgb: 139, 92, 246;
-  --acc: #d946ef;
+  --acc: #b5179e;
+  --acc2: rgba(181, 23, 158, 0.15);
+  --neon-shadow: 0 4px 12px rgba(139, 92, 246, 0.06);
 }
 .light-theme body {
   background: var(--bg);
   color: var(--text);
+}
+.light-theme .logo {
+  text-shadow: none !important;
 }
 .light-theme .ambient-bg-container {
   mix-blend-mode: normal;
@@ -718,6 +724,36 @@ footer a:hover { color: var(--acc); }
   background: rgba(139, 92, 246, 0.06);
   color: var(--primary);
   border: 1px solid rgba(139, 92, 246, 0.08);
+}
+.light-theme .rss-btn:hover {
+  background: var(--acc) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 15px rgba(181, 23, 158, 0.2) !important;
+}
+.light-theme #headerPostypeLink {
+  border-color: rgba(139, 92, 246, 0.2) !important;
+  color: var(--muted) !important;
+}
+.light-theme #headerPostypeLink:hover {
+  background: rgba(139, 92, 246, 0.06) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  box-shadow: none !important;
+  transform: translateY(-2px);
+}
+.light-theme .sort-btn.active, .light-theme .sort-btn:hover {
+  background: rgba(139, 92, 246, 0.08) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+.light-theme .genre-tag:hover, .light-theme .genre-tag.active {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25) !important;
+}
+.light-theme #genreBar {
+  display: none !important;
 }
 
 @media (max-width: 600px) {
@@ -1036,6 +1072,11 @@ async function toggleDimension() {
     // 3. 차원 스왑 연산 수행 (지연시간 0.6초 후 페이드와 함께 실행)
     if (currentDimension === 'underground') {
       currentDimension = 'ground';
+      currentGenre = '';
+      document.querySelectorAll('.genre-tag').forEach(b => {
+        if (b.dataset.genre === '') b.classList.add('active');
+        else b.classList.remove('active');
+      });
       htmlEl.classList.add('light-theme');
       portalBtnText.textContent = '지하 실험실 🔒';
       
