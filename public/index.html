@@ -600,7 +600,6 @@ footer a:hover { color: var(--acc); }
   100% { transform: rotate(360deg); }
 }
 
-/* 풀스크린 차원 워프 오버레이 */
 #portal-warp-overlay {
   position: fixed;
   inset: 0;
@@ -611,7 +610,7 @@ footer a:hover { color: var(--acc); }
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.6s;
+  transition: opacity 1.0s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 1.0s;
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
 }
@@ -1077,12 +1076,13 @@ async function toggleDimension() {
   // 2. 워프 스크린 페이드인 활성화
   overlay.classList.add('active');
   
-  // 3D 틸트 화면전환 연출을 극대화하기 위해 body 전체에 순간적인 3D rotation 적용
-  document.body.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
-  document.body.style.transform = 'perspective(1200px) rotateY(180deg) scale(0.9)';
+  // 부드러운 차원 이동 느낌을 위해 화면 전체를 부드럽게 축소하고 아련하게 블러 처리
+  document.body.style.transition = 'transform 1.0s cubic-bezier(0.25, 0.8, 0.25, 1), filter 1.0s cubic-bezier(0.25, 0.8, 0.25, 1)';
+  document.body.style.transform = 'scale(0.96)';
+  document.body.style.filter = 'blur(8px)';
   
   setTimeout(() => {
-    // 3. 차원 스왑 연산 수행 (지연시간 0.6초 후 페이드와 함께 실행)
+    // 3. 차원 스왑 연산 수행 (지연시간 1.0초 후 서서히 전환)
     if (currentDimension === 'underground') {
       currentDimension = 'ground';
       currentGenre = '';
@@ -1126,12 +1126,13 @@ async function toggleDimension() {
     // 데이터 리로드 및 렌더링
     loadPosts();
     
-    // 4. body 회전 원복 및 워프 스크린 해제
+    // 4. 화면 복원 및 워프 스크린 해제
     setTimeout(() => {
       document.body.style.transform = 'none';
+      document.body.style.filter = 'none';
       overlay.classList.remove('active');
-    }, 400);
-  }, 600);
+    }, 600);
+  }, 1000);
 }
 
 loadPosts();
