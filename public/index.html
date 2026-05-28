@@ -461,8 +461,8 @@ footer a:hover { color: var(--acc); }
 
 /* 성인 콘텐츠 민감도 가림막 오버레이 및 블러 처리 */
 .card-thumb-wrap.blurred .card-thumb {
-  filter: blur(16px) saturate(0.7);
-  transform: scale(1.12);
+  filter: blur(6px) saturate(0.8);
+  transform: scale(1.08);
 }
 .card-thumb-wrap:not(.blurred) .card-thumb {
   filter: blur(0px) saturate(1);
@@ -471,7 +471,7 @@ footer a:hover { color: var(--acc); }
 .adult-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(10, 8, 16, 0.88);
+  background: rgba(10, 8, 16, 0.55);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -479,8 +479,8 @@ footer a:hover { color: var(--acc); }
   gap: 12px;
   z-index: 10;
   transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   transform: translateZ(5px);
 }
 .card-thumb-wrap:not(.blurred) .adult-overlay {
