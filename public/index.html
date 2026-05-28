@@ -531,6 +531,195 @@ footer a:hover { color: var(--acc); }
   transform: scale(0.96) translateZ(8px);
 }
 
+/* 차원 이동 포털 버튼 및 가림막 스타일 */
+.portal-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(200, 160, 232, 0.12), rgba(139, 92, 246, 0.18));
+  border: 1px solid rgba(200, 160, 232, 0.25);
+  border-radius: 30px;
+  padding: 8px 18px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+.portal-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: var(--primary);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+  color: var(--primary);
+}
+.portal-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(255,255,255,0.08), rgba(255,255,255,0));
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+.portal-btn:hover::before {
+  transform: translateX(100%);
+}
+.portal-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.portal-icon {
+  animation: portal-spin 8s linear infinite;
+  color: var(--acc, #d946ef);
+}
+.portal-btn:hover .portal-icon {
+  animation: portal-spin 1.5s linear infinite;
+}
+.portal-orbit {
+  opacity: 0.6;
+}
+.portal-core {
+  opacity: 0.8;
+  color: var(--primary);
+}
+
+@keyframes portal-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 풀스크린 차원 워프 오버레이 */
+#portal-warp-overlay {
+  position: fixed;
+  inset: 0;
+  background: #07050d;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.6s;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+#portal-warp-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.warp-content {
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+#portal-warp-overlay.active .warp-content {
+  transform: scale(1);
+}
+.warp-vortex {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px double transparent;
+  border-top-color: var(--primary, #c8a0e8);
+  border-bottom-color: var(--acc, #d946ef);
+  background-image: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+  animation: warp-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  box-shadow: 0 0 35px rgba(139, 92, 246, 0.35);
+}
+.warp-message {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes warp-spin {
+  0% { transform: rotate(0deg) scale(0.9); }
+  50% { transform: rotate(180deg) scale(1.1); box-shadow: 0 0 50px rgba(217, 70, 239, 0.5); }
+  100% { transform: rotate(360deg) scale(0.9); }
+}
+
+/* 라이트 테마 변환 변수 주입 */
+:root.light-theme {
+  --bg: #faf8fc;
+  --bg2: #f3edf8;
+  --bg3: rgba(243, 237, 248, 0.65);
+  --line: rgba(139, 92, 246, 0.08);
+  --text: #2c2536;
+  --muted: #726880;
+  --primary: #8b5cf6;
+  --primary-rgb: 139, 92, 246;
+  --acc: #d946ef;
+}
+.light-theme body {
+  background: var(--bg);
+  color: var(--text);
+}
+.light-theme .ambient-bg-container {
+  mix-blend-mode: normal;
+}
+.light-theme .blob-1 { background-image: none !important; background-color: rgba(217, 70, 239, 0.09) !important; filter: blur(70px) !important; }
+.light-theme .blob-2 { background-image: none !important; background-color: rgba(139, 92, 246, 0.09) !important; filter: blur(70px) !important; }
+.light-theme .blob-3 { background-image: none !important; background-color: rgba(14, 165, 233, 0.09) !important; filter: blur(70px) !important; }
+.light-theme .blob-4 { background-image: none !important; background-color: rgba(236, 72, 153, 0.07) !important; filter: blur(70px) !important; }
+
+/* 라이트 테마에서 티스토리는 100% 무조건 블러 전면 무효화 */
+.light-theme .card-thumb-wrap.blurred .card-thumb {
+  filter: blur(0px) saturate(1) !important;
+  transform: scale(1) !important;
+}
+.light-theme .card-thumb-wrap.blurred .adult-overlay {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.light-theme .portal-btn {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(217, 70, 239, 0.12));
+  border-color: rgba(139, 92, 246, 0.2);
+  color: var(--text);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.08);
+}
+.light-theme .portal-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.light-theme #portal-warp-overlay {
+  background: #fbf9fc;
+}
+.light-theme .warp-message {
+  color: #2c2536;
+  text-shadow: none;
+}
+.light-theme .post-card {
+  background: #ffffff;
+  border: 1px solid rgba(139, 92, 246, 0.08);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.04);
+}
+.light-theme .post-card:hover {
+  border-color: rgba(139, 92, 246, 0.25);
+  box-shadow: 0 15px 40px rgba(139, 92, 246, 0.08);
+}
+.light-theme .card-title {
+  color: var(--text);
+}
+.light-theme .card-excerpt {
+  color: var(--muted);
+}
+.light-theme .card-tag {
+  background: rgba(139, 92, 246, 0.06);
+  color: var(--primary);
+  border: 1px solid rgba(139, 92, 246, 0.08);
+}
+
 @media (max-width: 600px) {
   .grid { grid-template-columns: 1fr; gap: 20px; }
   .hero-meta { gap: 16px; }
@@ -538,6 +727,14 @@ footer a:hover { color: var(--acc); }
 </style>
 </head>
 <body>
+
+<!-- 풀스크린 차원 워프 오버레이 -->
+<div id="portal-warp-overlay">
+  <div class="warp-content">
+    <div class="warp-vortex"></div>
+    <div class="warp-message" id="warpMessage">지상 보고실로 차원 이동 중...</div>
+  </div>
+</div>
 
 <div class="ambient-bg-container">
   <div class="ambient-blob blob-1"></div>
@@ -548,7 +745,7 @@ footer a:hover { color: var(--acc); }
 
 <header>
   <div class="header-inner">
-    <a href="/" class="logo">서예린의 <span>은밀한 실험실</span></a>
+    <a href="/" class="logo" id="logoLink">서예린의 <span>은밀한 실험실</span></a>
     <div class="header-right">
       <button class="rss-btn" onclick="copyRss()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -557,9 +754,22 @@ footer a:hover { color: var(--acc); }
         </svg>
         RSS 구독
       </button>
-      <a href="https://www.postype.com/@yasulfactory" target="_blank" class="rss-btn" style="border-color:var(--line);color:var(--muted);background:transparent;box-shadow:none">
+      <a href="https://www.postype.com/@yasulfactory" target="_blank" class="rss-btn" id="headerPostypeLink" style="border-color:var(--line);color:var(--muted);background:transparent;box-shadow:none">
         포스타입 ↗
       </a>
+      
+      <!-- 퀀텀 차원 이동 포털 버튼 -->
+      <button class="portal-btn" id="portalBtn" onclick="toggleDimension()">
+        <div class="portal-icon-wrap">
+          <svg class="portal-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="3 3" class="portal-orbit"></circle>
+            <circle cx="12" cy="12" r="3" class="portal-core" fill="currentColor"></circle>
+            <path d="M12 2a10 10 0 0 0-8 8" class="portal-arm"></path>
+            <path d="M12 22a10 10 0 0 0 8-8" class="portal-arm"></path>
+          </svg>
+        </div>
+        <span class="portal-btn-text" id="portalBtnText">지상 보고실 ☀️</span>
+      </button>
     </div>
   </div>
 </header>
@@ -617,6 +827,7 @@ let currentSort = 'RECENT';
 let currentPage = 0;
 let currentGenre = '';
 let allPosts = [];
+let currentDimension = 'underground'; // 'underground' | 'ground'
 
 // 포스트 불러오기
 async function loadPosts() {
@@ -624,14 +835,27 @@ async function loadPosts() {
   grid.innerHTML = '<div class="state-msg"><div class="loader"></div><br>포스트 불러오는 중...</div>';
 
   try {
-    const res = await fetch(`/posts?size=100&sort=${currentSort === 'POPULAR' ? 'popular' : 'recent'}&page=${currentPage}`);
-    const data = await res.json();
+    if (currentDimension === 'underground') {
+      const res = await fetch(`/posts?size=100&sort=${currentSort === 'POPULAR' ? 'popular' : 'recent'}&page=${currentPage}`);
+      const data = await res.json();
 
-    console.log('[postype raw]', data.raw);
+      console.log('[postype raw]', data.raw);
 
-    allPosts = data.posts || [];
-    renderPosts(allPosts);
-    updateStats(data.raw);
+      allPosts = data.posts || [];
+      renderPosts(allPosts);
+      updateStats(data.raw);
+    } else {
+      // 티스토리 지상 모드 로드
+      const res = await fetch(`/tistory-posts?size=100`);
+      const data = await res.json();
+
+      allPosts = data.posts || [];
+      renderPosts(allPosts);
+      
+      // 지상 모드용 통계 커스텀 텍스트 업데이트
+      document.getElementById('subCount').textContent = '공개 영역 ☀️';
+      document.getElementById('postCount').textContent = allPosts.length + '개';
+    }
   } catch(e) {
     grid.innerHTML = `<div class="state-msg">⚠️ 포스트를 불러오지 못했습니다<br><small style="color:var(--muted);margin-top:8px;display:block">${e.message}</small></div>`;
   }
@@ -663,7 +887,7 @@ function renderPosts(posts) {
 }
 
 function buildCard(p) {
-  const url = `${POSTYPE_BASE}/post/${p.id}`;
+  const url = p.isTistory ? p.link : `${POSTYPE_BASE}/post/${p.id}`;
   const title = p.title || '(제목 없음)';
   const excerpt = p.summary || p.excerpt || p.description || '';
   const series = p.series?.title || p.seriesTitle || '';
@@ -673,9 +897,12 @@ function buildCard(p) {
   const price = p.price > 0 ? `${p.price.toLocaleString()}P` : '무료';
   const tags = (p.tags || []).slice(0, 3).map(t => `<span class="card-tag">${t}</span>`).join('');
   const thumb = p.thumbnail || p.coverImage || p.thumbnailUrl || '';
+  
+  const isBlurActive = !p.isTistory;
   const thumbHtml = thumb 
-    ? `<div class="card-thumb-wrap blurred">
+    ? `<div class="card-thumb-wrap ${isBlurActive ? 'blurred' : ''}">
         <img class="card-thumb" src="${thumb}" alt="" loading="lazy" onerror="this.parentNode.style.display='none'">
+        ${isBlurActive ? `
         <div class="adult-overlay" onclick="revealThumbnail(event, this)">
           <div class="adult-icon">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -684,7 +911,7 @@ function buildCard(p) {
           </div>
           <span class="adult-text">민감한 콘텐츠</span>
           <button class="adult-btn">보기</button>
-        </div>
+        </div>` : ''}
       </div>` 
     : '';
 
@@ -723,11 +950,11 @@ function init3dTilt() {
       const angleX = (yc - y) / 10;
       const angleY = (x - xc) / 10;
       
+      const isLight = document.documentElement.classList.contains('light-theme');
       card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateZ(8px)`;
-      card.style.boxShadow = `
-        ${-angleY * 1.5}px ${angleX * 1.5}px 25px rgba(157, 107, 243, 0.15), 
-        0 15px 35px rgba(0, 0, 0, 0.45)
-      `;
+      card.style.boxShadow = isLight
+        ? `${-angleY * 1.5}px ${angleX * 1.5}px 25px rgba(139, 92, 246, 0.08), 0 15px 35px rgba(139, 92, 246, 0.08)`
+        : `${-angleY * 1.5}px ${angleX * 1.5}px 25px rgba(157, 107, 243, 0.15), 0 15px 35px rgba(0, 0, 0, 0.45)`;
     });
     
     card.addEventListener('mouseleave', () => {
@@ -781,6 +1008,76 @@ function revealThumbnail(event, overlayEl) {
   if (wrap) {
     wrap.classList.remove('blurred');
   }
+}
+
+async function toggleDimension() {
+  const overlay = document.getElementById('portal-warp-overlay');
+  const warpMsg = document.getElementById('warpMessage');
+  const portalBtnText = document.getElementById('portalBtnText');
+  const heroLabel = document.querySelector('.hero-label');
+  const heroTitle = document.querySelector('.hero h1');
+  const htmlEl = document.documentElement;
+  
+  // 1. 차원 이동 상태에 따른 워프 메시지 설정
+  if (currentDimension === 'underground') {
+    warpMsg.textContent = '지상 보고서 열람실로 차원 이동 중... ☀️';
+  } else {
+    warpMsg.textContent = '지하 비밀 실험실로 차원 이동 중... 🔒';
+  }
+  
+  // 2. 워프 스크린 페이드인 활성화
+  overlay.classList.add('active');
+  
+  // 3D 틸트 화면전환 연출을 극대화하기 위해 body 전체에 순간적인 3D rotation 적용
+  document.body.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+  document.body.style.transform = 'perspective(1200px) rotateY(180deg) scale(0.9)';
+  
+  setTimeout(() => {
+    // 3. 차원 스왑 연산 수행 (지연시간 0.6초 후 페이드와 함께 실행)
+    if (currentDimension === 'underground') {
+      currentDimension = 'ground';
+      htmlEl.classList.add('light-theme');
+      portalBtnText.textContent = '지하 실험실 🔒';
+      
+      // 타이틀 및 브랜딩 텍스트 전이
+      heroLabel.textContent = '공식 보고서 열람실';
+      heroTitle.innerHTML = '은밀한<br><em>영어</em> 수업';
+      
+      // 포스타입 바로가기 버튼 등을 티스토리 바로가기로 커스텀 전환할 수 있음
+      const postypeLink = document.getElementById('headerPostypeLink');
+      if (postypeLink) {
+        postypeLink.textContent = '티스토리 ↗';
+        postypeLink.href = 'https://chatgpts.kr';
+      }
+      
+      showToast('공개 영역 복귀 완료 ☀️');
+    } else {
+      currentDimension = 'underground';
+      htmlEl.classList.remove('light-theme');
+      portalBtnText.textContent = '지상 보고실 ☀️';
+      
+      // 타이틀 및 브랜딩 텍스트 전이
+      heroLabel.textContent = '실험실 채널';
+      heroTitle.innerHTML = '금기된<br><em>관능의</em> 서사';
+      
+      const postypeLink = document.getElementById('headerPostypeLink');
+      if (postypeLink) {
+        postypeLink.textContent = '포스타입 ↗';
+        postypeLink.href = 'https://www.postype.com/@yasulfactory';
+      }
+      
+      showToast('보안 구역 진입 완료 🔒');
+    }
+    
+    // 데이터 리로드 및 렌더링
+    loadPosts();
+    
+    // 4. body 회전 원복 및 워프 스크린 해제
+    setTimeout(() => {
+      document.body.style.transform = 'none';
+      overlay.classList.remove('active');
+    }, 400);
+  }, 600);
 }
 
 loadPosts();
