@@ -768,6 +768,215 @@ footer a:hover { color: var(--acc); }
   box-shadow: 0 8px 20px rgba(139, 92, 246, 0.04) !important;
 }
 
+/* 게이트웨이 오버레이 */
+.gateway-overlay {
+  position: fixed;
+  inset: 0;
+  background: #08060c;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1.2s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 1.2s;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+.gateway-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.gateway-inner {
+  max-width: 860px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  animation: gateway-load 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+@keyframes gateway-load {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.gateway-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gateway-logo {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+.gateway-header h2 {
+  font-family: var(--serif);
+  font-size: clamp(24px, 4vw, 32px);
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.gateway-subtitle {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.gateway-sectors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin: 10px 0;
+}
+@media (max-width: 650px) {
+  .gateway-sectors {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* 게이트웨이 카드 */
+.gateway-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 40px 30px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.gateway-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.03), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.gateway-card:hover::before {
+  opacity: 1;
+}
+
+/* 지하 카드 */
+.sector-underground:hover {
+  border-color: rgba(181, 23, 158, 0.4);
+  box-shadow: 0 15px 40px rgba(181, 23, 158, 0.15);
+  transform: translateY(-5px);
+}
+.sector-underground .sector-glow {
+  position: absolute;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(181, 23, 158, 0.15) 0%, transparent 70%);
+  top: -75px;
+  filter: blur(20px);
+}
+.sector-underground .sector-icon {
+  font-size: 36px;
+  filter: drop-shadow(0 0 10px rgba(181, 23, 158, 0.4));
+}
+.sector-underground .sector-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: #f7e6ff;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.sector-underground .sector-desc {
+  font-size: 13px;
+  color: #b0a5be;
+  line-height: 1.6;
+  text-align: center;
+  min-height: 60px;
+  margin: 0;
+}
+.sector-underground .sector-btn {
+  background: transparent;
+  border: 1px solid rgba(181, 23, 158, 0.5);
+  color: #fff;
+  padding: 10px 24px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  border-radius: 30px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 15px rgba(181, 23, 158, 0.1);
+}
+.sector-underground:hover .sector-btn {
+  background: #b5179e;
+  border-color: #b5179e;
+  box-shadow: 0 0 25px rgba(181, 23, 158, 0.5);
+}
+
+/* 지상 카드 */
+.sector-ground:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
+  transform: translateY(-5px);
+}
+.sector-ground .sector-glow {
+  position: absolute;
+  width: 150px; height: 150px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  top: -75px;
+  filter: blur(20px);
+}
+.sector-ground .sector-icon {
+  font-size: 36px;
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.4));
+}
+.sector-ground .sector-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: #e6f0ff;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.sector-ground .sector-desc {
+  font-size: 13px;
+  color: #a5b0be;
+  line-height: 1.6;
+  text-align: center;
+  min-height: 60px;
+  margin: 0;
+}
+.sector-ground .sector-btn {
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: #fff;
+  padding: 10px 24px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  border-radius: 30px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+}
+.sector-ground:hover .sector-btn {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+}
+
+.gateway-footer {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.12em;
+}
+
 @media (max-width: 600px) {
   .grid { grid-template-columns: 1fr; gap: 20px; }
   .hero-meta { gap: 16px; }
@@ -775,6 +984,41 @@ footer a:hover { color: var(--acc); }
 </style>
 </head>
 <body>
+
+<!-- 차원 연결 관문 게이트웨이 -->
+<div id="dimension-gateway" class="gateway-overlay">
+  <div class="gateway-inner">
+    <div class="gateway-header">
+      <div class="gateway-logo">QUANTUM MATRIX TERMINAL</div>
+      <h2>접속할 차원을 선택하십시오</h2>
+      <p class="gateway-subtitle">Select your clearance sector to establish quantum synchronization.</p>
+    </div>
+    
+    <div class="gateway-sectors">
+      <!-- 지하 구역 -->
+      <div class="gateway-card sector-underground" onclick="selectInitialDimension('underground')">
+        <div class="sector-glow"></div>
+        <div class="sector-icon">🔒</div>
+        <h3 class="sector-title">지하 비밀 실험실</h3>
+        <p class="sector-desc">금기된 관능의 서사. 고농도 에로티시즘과 보안이 적용된 지하 전용 실험 구역.</p>
+        <button class="sector-btn">SECURITY ACCESS</button>
+      </div>
+      
+      <!-- 지상 구역 -->
+      <div class="gateway-card sector-ground" onclick="selectInitialDimension('ground')">
+        <div class="sector-glow"></div>
+        <div class="sector-icon">☀️</div>
+        <h3 class="sector-title">지상 공식 연구실</h3>
+        <p class="sector-desc">서예린의 은밀한 영어 수업. 일반인 공개용 교육학 및 창작 콘텐츠 수록.</p>
+        <button class="sector-btn">PUBLIC ACCESS</button>
+      </div>
+    </div>
+    
+    <div class="gateway-footer">
+      <p>SYSTEM STATE: ACTIVE // SECURE CONNECTION ESTABLISHED</p>
+    </div>
+  </div>
+</div>
 
 <!-- 풀스크린 차원 워프 오버레이 -->
 <div id="portal-warp-overlay">
@@ -828,7 +1072,7 @@ footer a:hover { color: var(--acc); }
   <div class="hero-meta">
     <span>구독자 <strong id="subCount">—</strong></span>
     <span>포스트 <strong id="postCount">—</strong></span>
-    <span>채널 <strong>@yasulfactory</strong></span>
+    <span id="channelNameSpan">채널 <strong>@yasulfactory</strong></span>
   </div>
 </section>
 
@@ -860,10 +1104,10 @@ footer a:hover { color: var(--acc); }
 
 <footer>
   <div class="inner">
-    <span>© 큐리스 / 금기된 관능의 서사</span>
+    <span id="footerCopyright">© 큐리스 / 금기된 관능의 서사</span>
     <a href="/rss.xml">RSS 피드</a>
-    <a href="https://www.postype.com/@yasulfactory" target="_blank">포스타입 채널</a>
-    <a href="https://www.postype.com/@yasulfactory/membership" target="_blank">멤버십</a>
+    <a href="https://www.postype.com/@yasulfactory" target="_blank" id="footerChannelLink">포스타입 채널</a>
+    <a href="https://www.postype.com/@yasulfactory/membership" target="_blank" id="footerMembershipLink">멤버십</a>
   </div>
 </footer>
 
@@ -1065,6 +1309,10 @@ async function toggleDimension() {
   const heroLabel = document.querySelector('.hero-label');
   const heroTitle = document.querySelector('.hero h1');
   const htmlEl = document.documentElement;
+  const channelSpan = document.getElementById('channelNameSpan');
+  const footerCopy = document.getElementById('footerCopyright');
+  const footerChan = document.getElementById('footerChannelLink');
+  const footerMemb = document.getElementById('footerMembershipLink');
   
   // 1. 차원 이동 상태에 따른 워프 메시지 설정
   if (currentDimension === 'underground') {
@@ -1085,6 +1333,7 @@ async function toggleDimension() {
     // 3. 차원 스왑 연산 수행 (지연시간 1.0초 후 서서히 전환)
     if (currentDimension === 'underground') {
       currentDimension = 'ground';
+      localStorage.setItem('preferred_dimension', 'ground');
       currentGenre = '';
       document.querySelectorAll('.genre-tag').forEach(b => {
         if (b.dataset.genre === '') b.classList.add('active');
@@ -1097,6 +1346,15 @@ async function toggleDimension() {
       heroLabel.textContent = '공식 보고서 열람실';
       heroTitle.innerHTML = '은밀한<br><em>영어</em> 수업';
       
+      // 채널명 및 푸터 성인 정보 삭제
+      if (channelSpan) channelSpan.style.display = 'none';
+      if (footerCopy) footerCopy.textContent = '© 서예린 / 은밀한 영어 수업';
+      if (footerChan) {
+        footerChan.textContent = '티스토리 채널';
+        footerChan.href = 'https://chatgpts.kr';
+      }
+      if (footerMemb) footerMemb.style.display = 'none';
+      
       // 포스타입 바로가기 버튼 등을 티스토리 바로가기로 커스텀 전환할 수 있음
       const postypeLink = document.getElementById('headerPostypeLink');
       if (postypeLink) {
@@ -1107,12 +1365,22 @@ async function toggleDimension() {
       showToast('공개 영역 복귀 완료 ☀️');
     } else {
       currentDimension = 'underground';
+      localStorage.setItem('preferred_dimension', 'underground');
       htmlEl.classList.remove('light-theme');
       portalBtnText.textContent = '지상 보고실 ☀️';
       
       // 타이틀 및 브랜딩 텍스트 전이
       heroLabel.textContent = '실험실 채널';
       heroTitle.innerHTML = '금기된<br><em>관능의</em> 서사';
+      
+      // 채널명 및 푸터 성인 정보 복원
+      if (channelSpan) channelSpan.style.display = '';
+      if (footerCopy) footerCopy.textContent = '© 큐리스 / 금기된 관능의 서사';
+      if (footerChan) {
+        footerChan.textContent = '포스타입 채널';
+        footerChan.href = 'https://www.postype.com/@yasulfactory';
+      }
+      if (footerMemb) footerMemb.style.display = '';
       
       const postypeLink = document.getElementById('headerPostypeLink');
       if (postypeLink) {
@@ -1135,7 +1403,103 @@ async function toggleDimension() {
   }, 1000);
 }
 
-loadPosts();
+// 최초 차원 연결 및 동기화 설정 함수
+function selectInitialDimension(dimension) {
+  const gateway = document.getElementById('dimension-gateway');
+  if (gateway) {
+    gateway.classList.add('fade-out');
+  }
+  
+  const htmlEl = document.documentElement;
+  const portalBtnText = document.getElementById('portalBtnText');
+  const heroLabel = document.querySelector('.hero-label');
+  const heroTitle = document.querySelector('.hero h1');
+  const channelSpan = document.getElementById('channelNameSpan');
+  const footerCopy = document.getElementById('footerCopyright');
+  const footerChan = document.getElementById('footerChannelLink');
+  const footerMemb = document.getElementById('footerMembershipLink');
+  const postypeLink = document.getElementById('headerPostypeLink');
+  
+  // 로컬 스토리지에 차원 선호도 저장
+  localStorage.setItem('preferred_dimension', dimension);
+  currentDimension = dimension;
+  
+  if (dimension === 'ground') {
+    currentGenre = '';
+    document.querySelectorAll('.genre-tag').forEach(b => {
+      if (b.dataset.genre === '') b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    htmlEl.classList.add('light-theme');
+    portalBtnText.textContent = '지하 실험실 🔒';
+    
+    // 타이틀 및 브랜딩 텍스트 전이
+    heroLabel.textContent = '공식 보고서 열람실';
+    heroTitle.innerHTML = '은밀한<br><em>영어</em> 수업';
+    
+    // 채널명 및 푸터 성인 정보 삭제
+    if (channelSpan) channelSpan.style.display = 'none';
+    if (footerCopy) footerCopy.textContent = '© 서예린 / 은밀한 영어 수업';
+    if (footerChan) {
+      footerChan.textContent = '티스토리 채널';
+      footerChan.href = 'https://chatgpts.kr';
+    }
+    if (footerMemb) footerMemb.style.display = 'none';
+    
+    if (postypeLink) {
+      postypeLink.textContent = '티스토리 ↗';
+      postypeLink.href = 'https://chatgpts.kr';
+    }
+  } else {
+    currentDimension = 'underground';
+    htmlEl.classList.remove('light-theme');
+    portalBtnText.textContent = '지상 보고실 ☀️';
+    
+    // 타이틀 및 브랜딩 텍스트 전이
+    heroLabel.textContent = '실험실 채널';
+    heroTitle.innerHTML = '금기된<br><em>관능의</em> 서사';
+    
+    // 채널명 및 푸터 성인 정보 복원
+    if (channelSpan) channelSpan.style.display = '';
+    if (footerCopy) footerCopy.textContent = '© 큐리스 / 금기된 관능의 서사';
+    if (footerChan) {
+      footerChan.textContent = '포스타입 채널';
+      footerChan.href = 'https://www.postype.com/@yasulfactory';
+    }
+    if (footerMemb) footerMemb.style.display = '';
+    
+    if (postypeLink) {
+      postypeLink.textContent = '포스타입 ↗';
+      postypeLink.href = 'https://www.postype.com/@yasulfactory';
+    }
+  }
+  
+  // 데이터 불러오기
+  loadPosts();
+  
+  // 게이트웨이가 존재할 경우 애니메이션 완료 후 DOM에서 완전히 지움
+  if (gateway) {
+    setTimeout(() => {
+      gateway.remove();
+    }, 1200);
+  }
+}
+
+// 최초 접속 온보딩 게이트웨이 로직 실행
+(function initGateway() {
+  const pref = localStorage.getItem('preferred_dimension');
+  if (pref === 'underground' || pref === 'ground') {
+    // 기존에 선택 이력이 있다면 즉시 차원 진입
+    const gateway = document.getElementById('dimension-gateway');
+    if (gateway) {
+      gateway.remove();
+    }
+    selectInitialDimension(pref);
+  } else {
+    // 선택 이력이 없다면(최초 접속) 지하 테마 상태에서 게이트웨이를 띄워 선택 대기
+    currentDimension = 'underground';
+  }
+})();
 </script>
 </body>
 </html>
