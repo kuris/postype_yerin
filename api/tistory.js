@@ -49,9 +49,14 @@ module.exports = async function handler(req, res) {
         categories.push(decodeHtml(catMatch[1].trim()));
       }
       
-      const imgRegex = /<img[^>]+src=["']([^"']+)["']/i;
+      const imgRegex = /<img[^>]+?src=["']([^"']+)["']/i;
       const imgMatch = description.match(imgRegex);
-      const thumbnail = imgMatch ? imgMatch[1] : '';
+      let thumbnail = imgMatch ? imgMatch[1] : '';
+      
+      // daumcdn.net 의 default no-image 플레이스홀더 주소 필터링
+      if (thumbnail.includes('tistory_admin/static/images/no-image') || thumbnail.includes('daumcdn.net/tistory_admin')) {
+        thumbnail = '';
+      }
       
       // Clean summary by stripping HTML tags and decoding entities
       let summary = description
