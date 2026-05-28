@@ -387,6 +387,78 @@ footer a:hover { color: var(--acc); }
 }
 #toast.show { opacity: 1; transform: translateY(0); }
 
+/* 앰비언트 배경 시스템 */
+.ambient-bg-container {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+  background: transparent;
+}
+.ambient-blob {
+  position: absolute;
+  width: 50vw;
+  height: 50vw;
+  min-width: 450px;
+  min-height: 450px;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.08;
+  filter: blur(8px) saturate(0.85);
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 15%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 70%);
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 15%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0) 70%);
+  will-change: transform;
+}
+.blob-1 {
+  background-image: url('예린_시리즈_메인_단정.png');
+  top: -15%;
+  left: -15%;
+  animation: float-slow-1 32s ease-in-out infinite;
+}
+.blob-2 {
+  background-image: url('예린_1편_본문_도발.png');
+  top: 22%;
+  right: -20%;
+  animation: float-slow-2 38s ease-in-out infinite;
+}
+.blob-3 {
+  background-image: url('예린_1퍈_마무리_변주.png');
+  bottom: 8%;
+  left: -20%;
+  animation: float-slow-3 35s ease-in-out infinite;
+}
+.blob-4 {
+  background-image: url('침대_촉촉_관능.png');
+  bottom: -15%;
+  right: -15%;
+  animation: float-slow-4 42s ease-in-out infinite;
+}
+
+@keyframes float-slow-1 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  33% { transform: translate(4%, 5%) rotate(3deg) scale(1.06); }
+  66% { transform: translate(-3%, 7%) rotate(-2deg) scale(0.96); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+@keyframes float-slow-2 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1.05); }
+  33% { transform: translate(-5%, 4%) rotate(-4deg) scale(0.93); }
+  66% { transform: translate(4%, -3%) rotate(2deg) scale(1.04); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1.05); }
+}
+@keyframes float-slow-3 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(0.96); }
+  50% { transform: translate(6%, -5%) rotate(5deg) scale(1.06); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(0.96); }
+}
+@keyframes float-slow-4 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate(-7%, 6%) rotate(-3deg) scale(1.04); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+
 @media (max-width: 600px) {
   .grid { grid-template-columns: 1fr; gap: 20px; }
   .hero-meta { gap: 16px; }
@@ -394,6 +466,13 @@ footer a:hover { color: var(--acc); }
 </style>
 </head>
 <body>
+
+<div class="ambient-bg-container">
+  <div class="ambient-blob blob-1"></div>
+  <div class="ambient-blob blob-2"></div>
+  <div class="ambient-blob blob-3"></div>
+  <div class="ambient-blob blob-4"></div>
+</div>
 
 <header>
   <div class="header-inner">
