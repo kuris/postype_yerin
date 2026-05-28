@@ -9,54 +9,155 @@ const HEADERS = {
 };
 
 /**
- * 포스타입 공식 비동기 API로 모든 포스트를 병렬 일괄 스크래핑 (최대 개수 완전 제한 없음)
+ * 포스타입 공식 비동기 API + 채널 홈 HTML 파싱 하이브리드 수집 (50개 이상 누락 건 완전 해결)
  */
 async function fetchPosts({ size = 100, sortType = 'RECENT' } = {}) {
   try {
-    // 1. 첫 페이지를 호출하여 전체 페이지 수(totalPages) 및 첫 페이지 아이템 획득
+    // 1. 채널 홈 HTML에서 가장 최신 포스트들(약 12개)을 먼저 실시간 수집
+    const htmlPosts = await fetchPostsFromHtml();
+
+    // 2. 비공개 API 피드에서 전체 아이템 획득 (stale/cached로 인한 최신 누락 보완용)
     const firstPageUrl = `https://api.postype.com/api/v2/channel/${CHANNEL_ID}/activity/all?page=1`;
     const res = await fetch(firstPageUrl, { headers: HEADERS });
-    if (!res.ok) throw new Error(`Postype API status: ${res.status}`);
-    
-    const data = await res.json();
-    const totalPages = data.totalPages || 1;
-    const allItems = [...(data.content || [])];
+    let apiPosts = [];
 
-    // 2. 만약 페이지가 더 있다면, Vercel 시간 초과 방지를 위해 병렬(Promise.all)로 모든 페이지 한꺼번에 fetch
-    if (totalPages > 1) {
-      const promises = [];
-      // 2페이지부터 끝페이지까지 병렬 요청 생성
-      for (let p = 2; p <= totalPages; p++) {
-        promises.push(
-          fetch(`https://api.postype.com/api/v2/channel/${CHANNEL_ID}/activity/all?page=${p}`, { headers: HEADERS })
-            .then(r => r.ok ? r.json() : { content: [] })
-            .catch(() => ({ content: [] }))
-        );
-      }
-      const results = await Promise.all(promises);
-      for (const result of results) {
-        if (result && result.content) {
-          allItems.push(...result.content);
+    if (res.ok) {
+      const data = await res.json();
+      const totalPages = data.totalPages || 1;
+      const allItems = [...(data.content || [])];
+
+      if (totalPages > 1) {
+        const promises = [];
+        for (let p = 2; p <= totalPages; p++) {
+          promises.push(
+            fetch(`https://api.postype.com/api/v2/channel/${CHANNEL_ID}/activity/all?page=${p}`, { headers: HEADERS })
+              .then(r => r.ok ? r.json() : { content: [] })
+              .catch(() => ({ content: [] }))
+          );
+        }
+        const results = await Promise.all(promises);
+        for (const result of results) {
+          if (result && result.content) {
+            allItems.push(...result.content);
+          }
         }
       }
+
+      apiPosts = allItems
+        .filter(item => item.type === 'POST' && item.feedItem)
+        .map(item => normalizePost(item.feedItem));
     }
 
-    // 3. 포스트 타입("POST")인 요소들만 필터링하여 데이터 매핑
-    const posts = allItems
-      .filter(item => item.type === 'POST' && item.feedItem)
-      .map(item => normalizePost(item.feedItem));
+    // 3. HTML 파싱 데이터와 API 피드 데이터를 병합 및 중복 제거
+    const combinedPosts = [];
+    const seenIds = new Set();
 
-    // 정렬 (인기순 요청 시 추가 정렬 가능)
+    // 최신 순서 유지를 위해 HTML 데이터를 우선 삽입
+    for (const post of htmlPosts) {
+      if (!seenIds.has(post.id)) {
+        seenIds.add(post.id);
+        combinedPosts.push(post);
+      }
+    }
+
+    // 그 다음 API 데이터를 순차 병합
+    for (const post of apiPosts) {
+      if (!seenIds.has(post.id)) {
+        seenIds.add(post.id);
+        combinedPosts.push(post);
+      }
+    }
+
+    // 4. 발행일 기준 내림차순 정렬 (최신순 정렬 기본 보장)
+    combinedPosts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+    // 인기순 요청인 경우 정렬 분기
     if (sortType === 'POPULAR') {
-      // 뷰 카운트가 API에 있으면 사용, 없으면 좋아요/후원 통계 등 순서 유지
-      posts.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+      combinedPosts.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
     }
 
-    return { data: posts.slice(0, size), url: firstPageUrl };
+    return { data: combinedPosts.slice(0, size), url: `https://www.postype.com/@${CHANNEL_HANDLE}` };
   } catch (err) {
-    console.error('fetchPosts via internal API error:', err);
+    console.error('fetchPosts via hybrid pipeline error:', err);
     throw err;
   }
+}
+
+/**
+ * 채널 홈 HTML의 self.__next_f.push 스트림에서 포스트 객체 직접 추출
+ */
+async function fetchPostsFromHtml() {
+  const posts = [];
+  try {
+    const res = await fetch(`https://www.postype.com/@${CHANNEL_HANDLE}`, { headers: HEADERS });
+    if (!res.ok) return [];
+    const html = await res.text();
+
+    const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/g;
+    let match;
+    let combinedText = '';
+    while ((match = scriptRegex.exec(html)) !== null) {
+      const content = match[2];
+      if (content.includes('self.__next_f.push')) {
+        combinedText += content;
+      }
+    }
+
+    // 직렬화된 JSON 문자열 역직렬화 및 디코딩
+    let unescaped = combinedText;
+    unescaped = unescaped.replace(/\\"/g, '"');
+    unescaped = unescaped.replace(/\\\\/g, '\\');
+
+    const seenIds = new Set();
+    let pos = 0;
+
+    while ((pos = unescaped.indexOf('"postId":', pos)) !== -1) {
+      let startIdx = -1;
+      let braceCount = 0;
+      for (let i = pos; i >= 0; i--) {
+        if (unescaped[i] === '}') braceCount--;
+        if (unescaped[i] === '{') {
+          braceCount++;
+          if (braceCount === 1) {
+            startIdx = i;
+            break;
+          }
+        }
+      }
+
+      if (startIdx !== -1) {
+        let endIdx = -1;
+        braceCount = 1;
+        for (let i = startIdx + 1; i < unescaped.length; i++) {
+          if (unescaped[i] === '{') braceCount++;
+          if (unescaped[i] === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              endIdx = i;
+              break;
+            }
+          }
+        }
+
+        if (endIdx !== -1) {
+          const jsonStr = unescaped.slice(startIdx, endIdx + 1);
+          try {
+            const obj = JSON.parse(jsonStr);
+            if (obj.postId && obj.title && !seenIds.has(obj.postId)) {
+              seenIds.add(obj.postId);
+              posts.push(normalizePost(obj));
+            }
+          } catch (e) {
+            // 구문 오류 건 무시
+          }
+        }
+      }
+      pos += 9;
+    }
+  } catch (err) {
+    console.error('fetchPostsFromHtml parsing failed:', err);
+  }
+  return posts;
 }
 
 /**
@@ -77,12 +178,15 @@ function normalizePost(p) {
     }
   }
 
+  // 썸네일 URL을 다각적으로 파싱하여 에셋 누락 방지
+  const thumb = p.thumbnailUrl || p.coverImage || (p.thumbnails && p.thumbnails[0] ? p.thumbnails[0].url : '');
+
   return {
     id: String(p.postId || p.id || ''),
     title: p.title || '',
-    summary: p.excerpt || p.subTitle || '',
+    summary: p.summary || p.excerpt || p.subTitle || '',
     publishedAt: pubDate,
-    thumbnail: p.thumbnailUrl || p.coverImage || '',
+    thumbnail: thumb || '',
     tags: tags.length > 0 ? tags : (p.tags || []),
     link: `${BASE_URL}/@${CHANNEL_HANDLE}/post/${p.postId || p.id}`,
     price: p.price || 0,

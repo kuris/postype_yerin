@@ -37,7 +37,7 @@ function buildRss(posts) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
-    <title>서예린의 은밀한 실험실</title>
+    <title>금기된 관능의 서사</title>
     <link>https://www.postype.com/@${CHANNEL_HANDLE}</link>
     <description>TS·NTR·조교·하드코어 등 다양한 장르의 금기된 관능의 서사</description>
     <language>ko</language>
