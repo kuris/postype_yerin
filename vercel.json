@@ -1,4 +1,5 @@
 {
+  "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/rss", "destination": "/api/rss" },
     { "source": "/rss.xml", "destination": "/api/rss" },
